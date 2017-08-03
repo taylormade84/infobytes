@@ -97,8 +97,6 @@ def get_int_names(one, ten):
 def main():
     hostname, oneGig, tenGig = userInput()
     meta_name, data_name = get_int_names(oneGig, tenGig)
-    ## GITHUB TEST ## 
-
     sw_path = get_fs()
     uuid = get_uuid().strip()
     fsid = get_fsid() 
