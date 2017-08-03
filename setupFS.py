@@ -4,7 +4,7 @@ from __future__ import print_function
 import os
 from time import gmtime, strftime
 from glob import glob
-from subprocess import subprocess as sb
+import subprocess as sb
 
 class bcolors:
     HEADER = '\033[95m'
@@ -78,6 +78,7 @@ def get_fsid():
             fsid = line.split('=')[1]
     return fsid
 
+
 def backup(path):
     dstcopy = '%s.orig.%s' % (path, backup_time)
     cmd = 'cp -p %s %s' % (path, dstcopy) 
@@ -85,20 +86,28 @@ def backup(path):
     print(bcolors.OKBLUE + 'Backing up sw_framestore_map to sw_framestore_map.orig.<date>')
     print(bcolors.ENDC)
 
+def active_int_list():
+    ifconfig = ['ifconfig']
+    awk = ["awk", '/UP/&&/RUNNING/ {print $1}']
+    p1 = sb.Popen(ifconfig, stdout=sb.PIPE)
+    p2 = sb.Popen(awk, stdin=p1.stdout)
+    print(p2.stdout)
+    
+
 def map_gen(fs_file, host, house, highspeed, uuid, fsid):
     framestore_contents = template.format(host, house, uuid, fsid, highspeed)
     with open(fs_file, 'w+') as f:
         f.write(framestore_contents)
 
 def main():
-    hostname, oneGig, tenGig = userInput()
-    meta_name, data_name = get_int_names(oneGig, tenGig)
-    sw_path = get_fs()
-    uuid = get_uuid().strip()
-    fsid = get_fsid() 
-    backup(sw_path)
-    map_gen(sw_path, hostname, oneGig, tenGig, uuid, fsid)
-
+#    hostname, oneGig, tenGig = userInput()
+#    meta_name, data_name = get_int_names(oneGig, tenGig)
+#    sw_path = get_fs()
+#    uuid = get_uuid().strip()
+#    fsid = get_fsid() 
+#    backup(sw_path)
+#    map_gen(sw_path, hostname, oneGig, tenGig, uuid, fsid)
+    active_int_list()
 
 
 if __name__ == '__main__':
