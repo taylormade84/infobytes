@@ -90,14 +90,9 @@ def map_gen(fs_file, host, house, highspeed, uuid, fsid):
     with open(fs_file, 'w+') as f:
         f.write(framestore_contents)
 
-def get_int_names(one, ten):
-    cmd = ''
-    sb.Popen( 
-
 def main():
     hostname, oneGig, tenGig = userInput()
     meta_name, data_name = get_int_names(oneGig, tenGig)
-
     sw_path = get_fs()
     uuid = get_uuid().strip()
     fsid = get_fsid() 
