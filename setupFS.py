@@ -92,7 +92,6 @@ def active_int_list():
     p1 = sb.Popen(ifconfig, stdout=sb.PIPE)
     p2 = sb.Popen(awk, stdin=p1.stdout)
     print(p2.communicate()[1]) 
-    
 
 def map_gen(fs_file, host, house, highspeed, uuid, fsid):
     framestore_contents = template.format(host, house, uuid, fsid, highspeed)
