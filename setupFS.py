@@ -91,7 +91,7 @@ def active_int_list():
     awk = ["awk", '/UP/&&/RUNNING/ {print $1}']
     p1 = sb.Popen(ifconfig, stdout=sb.PIPE)
     p2 = sb.Popen(awk, stdin=p1.stdout)
-    print(p2.stdout)
+    print(p2.communicate()[1]) 
     
 
 def map_gen(fs_file, host, house, highspeed, uuid, fsid):
