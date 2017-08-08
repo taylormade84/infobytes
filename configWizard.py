@@ -260,17 +260,20 @@ def net_gen(path, uuid, meta, data):
     with open(path, 'w+') as f:
         f.write(netcfg_contents)
 
-def user_input(dev_dict):
+def user_input(dev_dict, interfaces):
     while True:
+        
         meta_selection = raw_input('Select the row number for metadata interface: ')
         if meta_selection.isdigit() and int(meta_selection) in range(1, len(dev_dict)) \
         or meta_selection.isdigit() and int(meta_selection) == 1:
             break
         else:
             print('Selection was invalid, try again or exit with Ctrl+c')
+            display_options(interfaces)
             continue
 
     while True:
+        display_options(interfaces)
         data_selection = raw_input('Select the row number for data interface: ')
         if data_selection.isdigit() and int(data_selection) in range(1, len(dev_dict)) \
         or data_selection.isdigit() and int(data_selection) == 1:
@@ -287,6 +290,14 @@ def devname_to_ip(dev_name):
     p2 = sb.Popen(awk, stdin=p1.stdout, stdout=sb.PIPE)
     return p2.communicate()[0].strip()
 
+def display_options(interfaces):
+    # Viewable User Input Selection
+    dev_dict = {}
+    for num, dev in enumerate(interfaces, 1):
+        print(str(num) + ':', dev, devname_to_ip(dev))
+        dev_dict.update({num:dev})
+    return dev_dict
+    
     
 def main():
     # Obtaining Info for sw_framestore_map
@@ -294,19 +305,16 @@ def main():
     if hostname == None:
         print('Unable to obtain hostname')
         exit(-1)
-    interfaces = active_int_list()
-    dev_dict = {}
 
-    # Viewable User Input Selection
-    for num, dev in enumerate(interfaces, 1):
-        print(str(num) + ':', dev)
-        dev_dict.update({num:dev})
+    interfaces = active_int_list()
+    dev_dict = display_options(interfaces)
+    meta, data = user_input(dev_dict, interfaces)
+    meta_ip = devname_to_ip(meta)
+    data_ip = devname_to_ip(data)
+
 
     
     # Data Injected into sw_framestore_map 
-    meta, data = user_input(dev_dict)
-    meta_ip = devname_to_ip(meta)
-    data_ip = devname_to_ip(data)
     sw_path = get_fs()
     uuid = get_uuid().strip()
     fsid = get_fsid() 
