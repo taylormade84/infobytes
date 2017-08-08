@@ -293,6 +293,20 @@ def devname_to_ip(dev_name):
 def display_options(interfaces):
     # Viewable User Input Selection
     dev_dict = {}
+    for dev in interfaces:
+        ping_ip = devname_to_ip(dev)
+        cmd = ['ping', '-c1', '{}'.format(ping_ip)]
+        p1 = sb.Popen(cmd, stdout=sb.PIPE, stderr=sb.PIPE)
+        p1.communicate()
+        exit_status = p1.returncode
+        if exit_status != 0:
+            print(bcolors.WARNING + 'Unable to ping all active dev - check your IP configs')
+            print(bcolors.ENDC)
+            exit(-2)
+    
+    if exit_status != 0:
+        print('Unable to ping IP - check your ip addresses')
+        exit(-1)
     for num, dev in enumerate(interfaces, 1):
         print(str(num) + ':', dev, devname_to_ip(dev))
         dev_dict.update({num:dev})
@@ -331,6 +345,7 @@ def main():
     netcfg_path = get_netcfg()
     backup(netcfg_path)
     net_gen(netcfg_path, uuid, meta, data)
+    print('Restart S+W and Wiretap Services in order to apply changes')
 
 
 
