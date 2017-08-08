@@ -86,27 +86,66 @@ def backup(path):
     print(bcolors.OKBLUE + 'Backing up sw_framestore_map to sw_framestore_map.orig.<date>')
     print(bcolors.ENDC)
 
+
 def active_int_list():
+    """ Retruns a list of active interfaces """
+    interfaces = []
     ifconfig = ['ifconfig']
     awk = ["awk", '/UP/&&/RUNNING/ {print $1}']
     p1 = sb.Popen(ifconfig, stdout=sb.PIPE)
-    p2 = sb.Popen(awk, stdin=p1.stdout)
-    print(p2.communicate()[1]) 
+    p2 = sb.Popen(awk, stdin=p1.stdout, stdout=sb.PIPE)
+
+    for dev in p2.communicate()[0].strip().split('\n'):
+        interfaces.append(dev.strip(':'))
+    return interfaces
+
 
 def map_gen(fs_file, host, house, highspeed, uuid, fsid):
     framestore_contents = template.format(host, house, uuid, fsid, highspeed)
     with open(fs_file, 'w+') as f:
         f.write(framestore_contents)
 
+
+def user_input(dev_dict):
+    while True:
+        meta_selection = raw_input('Select the interfaces used for metadata: ')
+        if meta_selection.isdigit() and int(meta_selection) <= len(dev_dict) and int(meta_selection) >= -1:
+            break
+        else:
+            print('Selection was invalid, try again or exit with Ctrl+c')
+            continue
+
+    while True:
+        data_selection = raw_input('Select the interfaces used for data: ')
+        if data_selection.isdigit() and int(data_selection) <= len(dev_dict) and int(data_selection) >= -1:
+            break
+        else:
+            print('Selection was invalid, try again or exit with Ctrl+c')
+            continue
+    return dev_dict[int(meta_selection)], dev_dict[int(data_selection)]
+
 def main():
+    # Obtaining Info for sw_framestore_map
+    interfaces = active_int_list()
+    dev_dict = {}
+
+    for num, dev in enumerate(interfaces, 1):
+        print(str(num) + ':', dev)
+        dev_dict.update({num:dev})
+
+    meta, data = user_input(dev_dict)
+    print(meta, data)
+
 #    hostname, oneGig, tenGig = userInput()
 #    meta_name, data_name = get_int_names(oneGig, tenGig)
 #    sw_path = get_fs()
 #    uuid = get_uuid().strip()
 #    fsid = get_fsid() 
 #    backup(sw_path)
-#    map_gen(sw_path, hostname, oneGig, tenGig, uuid, fsid)
-    active_int_list()
+
+    # Creating new framestore_map
+    #map_gen(sw_path, hostname, oneGig, tenGig, uuid, fsid) 
+    
 
 
 if __name__ == '__main__':
