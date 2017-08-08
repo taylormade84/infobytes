@@ -262,10 +262,9 @@ def net_gen(path, uuid, meta, data):
 
 def user_input(dev_dict, interfaces):
     while True:
-        
         meta_selection = raw_input('Select the row number for metadata interface: ')
-        if meta_selection.isdigit() and int(meta_selection) in range(1, len(dev_dict)) \
-        or meta_selection.isdigit() and int(meta_selection) == 1:
+        if meta_selection.isdigit() and int(meta_selection) <= len(dev_dict)\
+        or meta_selection.isdigit() and int(meta_selection) > 0:
             break
         else:
             print('Selection was invalid, try again or exit with Ctrl+c')
@@ -275,13 +274,14 @@ def user_input(dev_dict, interfaces):
     while True:
         display_options(interfaces)
         data_selection = raw_input('Select the row number for data interface: ')
-        if data_selection.isdigit() and int(data_selection) in range(1, len(dev_dict)) \
-        or data_selection.isdigit() and int(data_selection) == 1:
+        if data_selection.isdigit() and int(data_selection) <= len(dev_dict)\
+        or data_selection.isdigit() and int(data_selection) > 0:
             break
         else:
             print('Selection was invalid, try again or exit with Ctrl+c')
             continue
     return dev_dict[int(meta_selection)], dev_dict[int(data_selection)]
+
 
 def devname_to_ip(dev_name):
     ifconfig = ['ifconfig', '{}'.format(dev_name)]
@@ -322,6 +322,12 @@ def main():
 
     # Creating new framestore_map
     map_gen(sw_path, hostname, meta_ip, data_ip, uuid, fsid) 
+
+    append_int = glob('/*/*/sw/cfg/sw_framestore_map')[0]
+    if meta_ip != data_ip:
+        with open(append_int, 'a') as f:
+            f.write('PROT=TCP   IADDR={}    DEV=1'.format(meta_ip))
+
     netcfg_path = get_netcfg()
     backup(netcfg_path)
     net_gen(netcfg_path, uuid, meta, data)
