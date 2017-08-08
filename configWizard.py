@@ -238,14 +238,15 @@ def active_int_list():
     """ Retruns a list of active interfaces """
     interfaces = []
     ifconfig = ['ifconfig']
-    awk = ["awk", '/UP/&&/RUNNING/ {print $1}']
+    awk = ["awk", '/UP/&&/RUNNING/&&/MULTICAST/ {print $1}']
     p1 = sb.Popen(ifconfig, stdout=sb.PIPE)
     p2 = sb.Popen(awk, stdin=p1.stdout, stdout=sb.PIPE)
 
     for dev in p2.communicate()[0].strip().split('\n'):
-        if not dev.lower().startswith('lo'):
+        if not dev.lower().startswith('lo') and dev.lower().startswith('e'):
             interfaces.append(dev.strip(':'))
     if len(interfaces) < 1:
+	print(bcolors.WARNING + 'No active interfaces found')
         exit(1)
     return interfaces
 
