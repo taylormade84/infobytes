@@ -361,6 +361,9 @@ def manual_setup():
     fsid = get_fsid() 
 
     meta_ip = raw_input('Type in your ip address of your house-network <usually your 1gig connection>: ')
+    print('')
+    print(bcolors.OKGREEN + "If you don't have a high-speed network - enter your house-network ip address again below")
+    print(bcolors.ENDC)
     data_ip = raw_input('Type in your ip address of your high-speed network <usually your 10/40/100 gig connection>: ')
     backup(sw_path)
     map_gen(sw_path, hostname, meta_ip, data_ip, uuid, fsid)
