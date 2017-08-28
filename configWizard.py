@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import os
+import sys
 import socket
 from time import gmtime, strftime
 from glob import glob
@@ -247,6 +248,7 @@ def active_int_list():
             interfaces.append(dev.strip(':'))
     if len(interfaces) < 1:
 	print(bcolors.WARNING + 'No active interfaces found')
+	print('try running script manually:\n./{} --manual'.format(sys.argv[0]))
         exit(1)
     return interfaces
 
@@ -302,6 +304,7 @@ def display_options(interfaces):
         exit_status = p1.returncode
         if exit_status != 0:
             print(bcolors.WARNING + 'Unable to ping all active dev - check your IP configs')
+            print('Try running the script using the --manual flag, e.g.  {} --manual'.format(sys.argv[0]))
             print(bcolors.ENDC)
             exit(-2)
     
@@ -312,15 +315,18 @@ def display_options(interfaces):
         print(str(num) + ':', dev, devname_to_ip(dev))
         dev_dict.update({num:dev})
     return dev_dict
-    
-    
-def main():
+
+def get_host():
     # Obtaining Info for sw_framestore_map
     hostname = socket.gethostname()
     if hostname == None:
         print('Unable to obtain hostname')
         exit(-1)
+    return hostname
 
+    
+def main():
+    hostname = get_host()
     interfaces = active_int_list()
     dev_dict = display_options(interfaces)
     meta, data = user_input(dev_dict, interfaces)
@@ -348,7 +354,30 @@ def main():
     net_gen(netcfg_path, uuid, meta, data)
     print('Restart S+W and Wiretap Services in order to apply changes')
 
+def manual_setup():
+    hostname = get_host()
+    sw_path = get_fs()
+    uuid = get_uuid().strip()
+    fsid = get_fsid() 
 
+    meta_ip = raw_input('Type in your ip address of your house-network <usually your 1gig connection>: ')
+    data_ip = raw_input('Type in your ip address of your high-speed network <usually your 10/40/100 gig connection>: ')
+    backup(sw_path)
+    map_gen(sw_path, hostname, meta_ip, data_ip, uuid, fsid)
+
+    append_int = glob('/*/*/sw/cfg/sw_framestore_map')[0]
+    if meta_ip != data_ip:
+        with open(append_int, 'a') as f:
+            f.write('PROT=TCP   IADDR={}    DEV=1'.format(meta_ip))
+
+    print('Restart S+W and Wiretap Services in order to apply changes')
+    
+
+    
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) > 1:
+        if sys.argv[1].lower() == '--manual':
+        	manual_setup() 
+    else:
+        main()
